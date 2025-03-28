@@ -3,12 +3,18 @@
   "version": "1.0.0",
   "description": "Visual regression tests for Point.dev",
   "scripts": {
-    "test": "playwright test",
-    "report": "playwright show-report",
-    "update": "playwright test --update-snapshots",
+    "test": "bun exec playwright test",
+    "report": "bun exec playwright show-report",
+    "update": "bun exec playwright test --update-snapshots",
     "reset": "rm -r ./playwright-report ./test-results ./*-snapshots || true"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1"
+  },
+  "trustedDependencies": [
+    "playwright"
+  ],
+  "engines": {
+    "bun": ">=1.0.0"
   }
 }
