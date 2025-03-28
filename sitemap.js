@@ -1,21 +1,83 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-// Starting point for crawling - adjust based on Point.dev's structure
-const ENTRY_POINT = "/";
+// Configuration
 const SITEMAP = join(__dirname, "./sitemap.json");
 const MAX_URLS = 20; // Limit number of pages to test initially
 
+// URL patterns to sample (only test one instance of each pattern)
+const TEMPLATE_PATTERNS = {
+  blog: {
+    pattern: /^\/blog\/(?!category|author)/, // Match blog posts but not category/author pages
+    sampleSize: 1, // Only test one blog post as they use the same template
+  },
+};
+
 export async function createSiteMap(baseURL, page) {
-  await page.goto(baseURL + ENTRY_POINT);
+  // Determine if we're in staging or production
+  const isStaging = baseURL.includes("point.dev");
+
+  // Always get sitemap from the current environment
+  const sitemapUrl = `${baseURL}/sitemap.xml`;
+
+  // Fetch the XML sitemap
+  await page.goto(sitemapUrl);
   await page.waitForLoadState("networkidle");
 
-  const urls = await page.evaluate(extractLocalLinks, baseURL);
-  // Limit the number of URLs to avoid too many tests initially
-  const limitedUrls = urls.slice(0, MAX_URLS);
-  const data = JSON.stringify(limitedUrls, null, 4);
+  // Extract URLs from the XML sitemap
+  const urls = await page.evaluate(() => {
+    const urlElements = document.querySelectorAll("loc");
+    return Array.from(urlElements).map((el) => {
+      const fullUrl = el.textContent;
+      // Just get the pathname, we'll handle domain replacement after
+      const path = new URL(fullUrl).pathname;
+      return path.startsWith("/") ? path : `/${path}`;
+    });
+  });
+
+  // Process URLs with template sampling
+  const processedUrls = new Set();
+  const templateSamples = new Map();
+
+  urls.forEach((url) => {
+    let shouldInclude = true;
+
+    // Check if URL matches any template pattern
+    for (const [key, { pattern, sampleSize }] of Object.entries(TEMPLATE_PATTERNS)) {
+      if (pattern.test(url)) {
+        // If we haven't collected enough samples for this pattern yet
+        if (!templateSamples.has(key)) {
+          templateSamples.set(key, new Set());
+        }
+        const samples = templateSamples.get(key);
+        if (samples.size < sampleSize) {
+          samples.add(url);
+          break;
+        } else {
+          shouldInclude = false;
+          break;
+        }
+      }
+    }
+
+    if (shouldInclude) {
+      processedUrls.add(url);
+    }
+  });
+
+  // Add template samples to final URL set
+  for (const samples of templateSamples.values()) {
+    samples.forEach((url) => processedUrls.add(url));
+  }
+
+  // Convert to array and limit
+  const finalUrls = Array.from(processedUrls).slice(0, MAX_URLS);
+
+  // Save to sitemap.json
+  const data = JSON.stringify(finalUrls, null, 2);
   writeFileSync(SITEMAP, data, { encoding: "utf-8" });
-  console.log(`Saved ${limitedUrls.length} URLs to sitemap.json`);
+  console.log(`Saved ${finalUrls.length} URLs to sitemap.json (including ${templateSamples.get("blog")?.size || 0} blog post sample)`);
+  console.log(`Testing against ${isStaging ? "staging (point.dev)" : "production (point.com)"}`);
 }
 
 export function readSiteMap() {
