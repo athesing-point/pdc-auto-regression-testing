@@ -1,6 +1,7 @@
 /* 
  * CSS to stabilize visual testing for Point.dev
  * Suppress elements that may cause flakiness in tests
+ * But preserve GSAP animations
  */
 
 /* Hide cookie banners if they exist */
@@ -11,12 +12,12 @@ div[id*="cookieBanner"] {
   display: none !important;
 }
 
-/* Hide elements that might animate or change between page loads */
-[class*="carousel"],
-[class*="slider"],
-[class*="animation"],
-[class*="animate"],
-[class*="typewriter"] {
+/* Hide non-GSAP elements that might animate or change between page loads */
+[class*="carousel"]:not([class*="gsap"]):not([data-gsap]),
+[class*="slider"]:not([class*="gsap"]):not([data-gsap]),
+[class*="animation"]:not([class*="gsap"]):not([data-gsap]),
+[class*="animate"]:not([class*="gsap"]):not([data-gsap]),
+[class*="typewriter"]:not([class*="gsap"]):not([data-gsap]) {
   visibility: hidden !important;
 }
 
@@ -30,9 +31,9 @@ iframe[title*="chat"] {
 }
 
 /* Hide video players that might autoplay */
-video,
-[class*="video-player"],
-[id*="video-player"] {
+video:not([class*="gsap"]):not([data-gsap]),
+[class*="video-player"]:not([class*="gsap"]):not([data-gsap]),
+[id*="video-player"]:not([class*="gsap"]):not([data-gsap]) {
   visibility: hidden !important;
 }
 
@@ -42,15 +43,23 @@ a:visited {
 }
 
 /* Remove any blinking cursors */
-[class*="cursor"],
-.blinking {
+[class*="cursor"]:not([class*="gsap"]):not([data-gsap]),
+.blinking:not([class*="gsap"]):not([data-gsap]) {
   animation: none !important;
   opacity: 1 !important;
 }
 
 /* Hide any date/time that might change between tests */
-[class*="date"],
-[class*="time"],
-time {
+[class*="date"]:not([class*="gsap"]):not([data-gsap]),
+[class*="time"]:not([class*="gsap"]):not([data-gsap]),
+time:not([class*="gsap"]):not([data-gsap]) {
   visibility: hidden !important;
+}
+
+/* Force GSAP animations into their end state if not properly triggered */
+.gsap-force-end {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+  transition: none !important;
 }
