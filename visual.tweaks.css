@@ -1,0 +1,56 @@
+/* 
+ * CSS to stabilize visual testing for Point.dev
+ * Suppress elements that may cause flakiness in tests
+ */
+
+/* Hide cookie banners if they exist */
+div[class*="cookie-banner"],
+div[class*="cookieBanner"],
+div[id*="cookie-banner"],
+div[id*="cookieBanner"] {
+  display: none !important;
+}
+
+/* Hide elements that might animate or change between page loads */
+[class*="carousel"],
+[class*="slider"],
+[class*="animation"],
+[class*="animate"],
+[class*="typewriter"] {
+  visibility: hidden !important;
+}
+
+/* Hide chat widgets, notification popups */
+[id*="chat-widget"],
+[class*="chat-widget"],
+[class*="notification"],
+[class*="popup"],
+iframe[title*="chat"] {
+  display: none !important;
+}
+
+/* Hide video players that might autoplay */
+video,
+[class*="video-player"],
+[id*="video-player"] {
+  visibility: hidden !important;
+}
+
+/* Stabilize link states */
+a:visited {
+  color: inherit !important;
+}
+
+/* Remove any blinking cursors */
+[class*="cursor"],
+.blinking {
+  animation: none !important;
+  opacity: 1 !important;
+}
+
+/* Hide any date/time that might change between tests */
+[class*="date"],
+[class*="time"],
+time {
+  visibility: hidden !important;
+}

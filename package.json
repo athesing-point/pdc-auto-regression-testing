@@ -1,0 +1,14 @@
+{
+  "name": "pdc-visual-regression-tests",
+  "version": "1.0.0",
+  "description": "Visual regression tests for Point.dev",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report",
+    "update": "playwright test --update-snapshots",
+    "reset": "rm -r ./playwright-report ./test-results ./*-snapshots || true"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1"
+  }
+}
