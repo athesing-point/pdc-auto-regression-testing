@@ -1,7 +1,7 @@
 /* 
  * CSS to stabilize visual testing for Point.dev
  * Suppress elements that may cause flakiness in tests
- * But preserve GSAP animations
+ * But preserve GSAP animations and sliders
  */
 
 /* Hide cookie banners if they exist */
@@ -12,28 +12,40 @@ div[id*="cookieBanner"] {
   display: none !important;
 }
 
-/* Hide non-GSAP elements that might animate or change between page loads */
-[class*="carousel"]:not([class*="gsap"]):not([data-gsap]),
-[class*="slider"]:not([class*="gsap"]):not([data-gsap]),
-[class*="animation"]:not([class*="gsap"]):not([data-gsap]),
-[class*="animate"]:not([class*="gsap"]):not([data-gsap]),
-[class*="typewriter"]:not([class*="gsap"]):not([data-gsap]) {
+/* Keep sliders and carousels visible, but hide other animations */
+[class*="animation"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([data-anim]),
+[class*="animate"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([data-anim]),
+[class*="typewriter"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([data-anim]) {
   visibility: hidden !important;
+}
+
+/* Force sliders to be visible */
+[class*="slider"],
+[class*="carousel"],
+.swiper,
+.splide,
+.slick-slider,
+[class*="testimonial"],
+[class*="review"],
+[class*="rating"] {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
 }
 
 /* Hide chat widgets, notification popups */
 [id*="chat-widget"],
 [class*="chat-widget"],
-[class*="notification"],
-[class*="popup"],
+[class*="notification"]:not([class*="review-notification"]):not([class*="testimonial"]),
+[class*="popup"]:not([class*="review"]):not([class*="testimonial"]),
 iframe[title*="chat"] {
   display: none !important;
 }
 
-/* Hide video players that might autoplay */
-video:not([class*="gsap"]):not([data-gsap]),
-[class*="video-player"]:not([class*="gsap"]):not([data-gsap]),
-[id*="video-player"]:not([class*="gsap"]):not([data-gsap]) {
+/* Hide video players that might autoplay, but keep everything needed for reviews */
+video:not([class*="gsap"]):not([data-gsap]):not([class*="review"]):not([class*="testimonial"]):not([class*="slider"]):not([class*="carousel"]),
+[class*="video-player"]:not([class*="gsap"]):not([data-gsap]):not([class*="review"]):not([class*="testimonial"]):not([class*="slider"]):not([class*="carousel"]),
+[id*="video-player"]:not([class*="gsap"]):not([data-gsap]):not([class*="review"]):not([class*="testimonial"]):not([class*="slider"]):not([class*="carousel"]) {
   visibility: hidden !important;
 }
 
@@ -43,16 +55,16 @@ a:visited {
 }
 
 /* Remove any blinking cursors */
-[class*="cursor"]:not([class*="gsap"]):not([data-gsap]),
-.blinking:not([class*="gsap"]):not([data-gsap]) {
+[class*="cursor"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]),
+.blinking:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]) {
   animation: none !important;
   opacity: 1 !important;
 }
 
 /* Hide any date/time that might change between tests */
-[class*="date"]:not([class*="gsap"]):not([data-gsap]),
-[class*="time"]:not([class*="gsap"]):not([data-gsap]),
-time:not([class*="gsap"]):not([data-gsap]) {
+[class*="date"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([class*="review"]):not([class*="testimonial"]),
+[class*="time"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([class*="review"]):not([class*="testimonial"]),
+time:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([class*="review"]):not([class*="testimonial"]) {
   visibility: hidden !important;
 }
 
@@ -62,4 +74,66 @@ time:not([class*="gsap"]):not([data-gsap]) {
   transform: none !important;
   visibility: visible !important;
   transition: none !important;
+}
+
+/* Prevent slider transitions from causing inconsistencies */
+[class*="slider"] *,
+[class*="carousel"] *,
+.swiper *,
+.splide *,
+.slick-slider * {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
+}
+
+/* Make sure slider pagination/navigation is visible */
+[class*="slider"] [class*="pagination"],
+[class*="slider"] [class*="dots"],
+[class*="slider"] [class*="navigation"],
+[class*="slider"] [class*="arrow"],
+[class*="slider"] [class*="bullet"],
+[class*="carousel"] [class*="pagination"],
+[class*="carousel"] [class*="dots"],
+[class*="carousel"] [class*="navigation"],
+[class*="carousel"] [class*="arrow"],
+[class*="carousel"] [class*="bullet"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Force all custom attribute-based animations to their end state */
+[data-anim] {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+  will-change: auto !important;
+  transition: none !important;
+}
+
+/* Ensure specific animation types reach correct end states */
+[data-anim="fadeIn"] {
+  opacity: 1 !important;
+}
+
+[data-anim="slideUp"],
+[data-anim="slideDown"] {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+}
+
+[data-anim="slideLeft"],
+[data-anim="slideRight"] {
+  transform: translateX(0) !important;
+  opacity: 1 !important;
+}
+
+[data-anim="scaleIn"] {
+  transform: scale(1) !important;
+  opacity: 1 !important;
+}
+
+[data-anim="flipUp"] {
+  transform: translateY(0) rotateX(0) !important;
+  opacity: 1 !important;
+  perspective: none !important;
 }

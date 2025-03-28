@@ -9,7 +9,7 @@
     "reset": "rm -r ./playwright-report ./test-results ./*-snapshots || true"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.1"
+    "@playwright/test": "^1.51.1"
   },
   "trustedDependencies": [
     "playwright"

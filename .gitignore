@@ -3,4 +3,8 @@ test-results/
 playwright-report/
 *-snapshots/
 sitemap.json
-.DS_Store 
+.DS_Store
+# Bun specific
+.bun
+*.bun
+bun.lockb 
