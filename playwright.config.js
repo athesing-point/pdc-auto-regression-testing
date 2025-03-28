@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 // Export these to make them accessible in other modules
 export const BROWSERS = ["Desktop Firefox", "Desktop Chrome", "Desktop Safari"];
-export const BASE_URL = "https://www.point.dev";
+export const BASE_URL = process.env.BASE_URL || "https://www.point.dev"; // Default to staging if not specified
 export const WIDTH = 1280;
 export const HEIGHT = 800;
 

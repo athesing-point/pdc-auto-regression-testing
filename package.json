@@ -4,8 +4,12 @@
   "description": "Visual regression tests for Point.dev",
   "scripts": {
     "test": "npx playwright test",
+    "test:staging": "BASE_URL=https://www.point.dev npx playwright test",
+    "test:prod": "BASE_URL=https://point.com npx playwright test",
     "report": "npx playwright show-report",
     "update": "npx playwright test --update-snapshots",
+    "update:staging": "BASE_URL=https://www.point.dev npx playwright test --update-snapshots",
+    "update:prod": "BASE_URL=https://point.com npx playwright test --update-snapshots",
     "reset": "rm -r ./playwright-report ./test-results ./*-snapshots || true"
   },
   "devDependencies": {

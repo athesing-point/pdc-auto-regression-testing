@@ -1,6 +1,6 @@
 # Point.dev Visual Regression Tests
 
-This project sets up automated visual regression testing for https://www.point.dev/ using Playwright with Node.js.
+This project sets up automated visual regression testing for Point.dev websites using Playwright with Node.js.
 
 ## Setup
 
@@ -27,15 +27,27 @@ npx playwright install
 
 ## Running Tests
 
+### Environment Options
+
+You can run tests against different environments:
+
+- Staging (point.dev): `npm run test:staging`
+- Production (point.com): `npm run test:prod`
+- Default (staging): `npm test`
+
 ### First Run - Generate Baseline
 
 The first time you run the tests, it will:
 
-1. Crawl the Point.dev website to generate a sitemap
+1. Crawl the website to generate a sitemap
 2. Create baseline screenshots for comparison
 
 ```bash
-npm test
+# For staging
+npm run test:staging
+
+# For production
+npm run test:prod
 ```
 
 This initial run will "fail" because there are no baseline screenshots yet.
@@ -45,7 +57,11 @@ This initial run will "fail" because there are no baseline screenshots yet.
 After the baseline is created, run the tests again to compare against the baselines:
 
 ```bash
-npm test
+# For staging
+npm run test:staging
+
+# For production
+npm run test:prod
 ```
 
 ### Updating Baselines
@@ -53,7 +69,11 @@ npm test
 If you want to update the baseline screenshots (e.g., after an intentional design change):
 
 ```bash
-npm run update
+# For staging
+npm run update:staging
+
+# For production
+npm run update:prod
 ```
 
 ### Viewing Reports
@@ -63,41 +83,3 @@ To see the visual comparison report after tests:
 ```bash
 npm run report
 ```
-
-### Reset Everything
-
-To clear all test artifacts and start fresh:
-
-```bash
-npm run reset
-```
-
-## Customization
-
-- `playwright.config.js` - Configure browsers, viewport size
-- `sitemap.js` - Adjust crawling behavior and URL extraction
-- `visual.tweaks.css` - Add CSS to suppress flaky elements
-- `visual.test.js` - Modify screenshot capture behavior
-
-## Troubleshooting
-
-If you encounter flaky tests:
-
-1. Check if dynamic elements need to be hidden in `visual.tweaks.css`
-2. Increase timeout values in `visual.test.js`
-3. Consider limiting the number of pages tested by editing `MAX_URLS` in `sitemap.js`
-
-## Special Handling for GSAP Animations
-
-This testing setup includes special support for Point.dev's custom GSAP animation library, ensuring that:
-
-1. All elements with `data-anim` attributes are properly triggered
-2. ScrollTrigger animations are fully executed before screenshots are taken
-3. Review sliders and interactive elements are properly displayed
-
-The tests will automatically:
-
-- Scroll through pages to trigger animations
-- Force animations to their final state
-- Wait appropriate times for animations to complete
-- Ensure all custom GSAP animations have completed properly
