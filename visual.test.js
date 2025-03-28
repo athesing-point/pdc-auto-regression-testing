@@ -2,18 +2,31 @@ import { readSiteMap } from "./sitemap.js";
 import { test, expect } from "@playwright/test";
 import { join } from "node:path";
 
+// Define viewport configurations
+const VIEWPORT_CONFIGS = {
+  desktop_large: { width: 1920 },
+  desktop: { width: 992 },
+  tablet: { width: 768 },
+  mobile: { width: 375 },
+};
+
 // Configuration for screenshots
-const OPTIONS = {
+const getScreenshotOptions = (viewport) => ({
   stylePath: join(__dirname, "./visual.tweaks.css"),
   fullPage: true, // Use Playwright's built-in full page capture
   timeout: 30000, // Significantly increased timeout for complex pages with animations
-};
+  clip: {
+    width: viewport.width,
+    x: 0,
+    y: 0,
+  },
+});
 
 // Animation handling configuration
 const ANIMATION_CONFIG = {
   scrollDelay: 300, // Increased delay between scroll steps (ms)
   scrollStep: 150, // Smaller steps for more granular scrolling
-  finalDelay: 5000, // Longer wait time after scrolling for animations to finish
+  finalDelay: 6000, // Longer wait time after scrolling for animations to finish
   maxWaitForDomContentLoaded: 10000, // Maximum time to wait for DOM content
   maxWaitForLoadEvent: 15000, // Maximum time to wait for load event
   maxWaitForNetworkIdle: 20000, // Maximum time to wait for network idle
@@ -29,40 +42,48 @@ try {
   });
 }
 
-// Generate a test for each URL in the sitemap
+// Generate tests for each URL and viewport combination
 for (const url of sitemap) {
-  test(`Page at ${url}`, async ({ page }) => {
-    // Set longer timeouts for page navigation
-    page.setDefaultNavigationTimeout(ANIMATION_CONFIG.maxWaitForNetworkIdle);
-    page.setDefaultTimeout(ANIMATION_CONFIG.maxWaitForNetworkIdle);
+  for (const [viewportName, viewport] of Object.entries(VIEWPORT_CONFIGS)) {
+    test(`${url} [${viewportName}]`, async ({ page }) => {
+      // Set viewport size
+      await page.setViewportSize({
+        width: viewport.width,
+        height: 800, // Default height, will scroll for full page capture
+      });
 
-    // Navigate to the page with extended wait times
-    await page.goto(url, {
-      waitUntil: "networkidle",
-      timeout: ANIMATION_CONFIG.maxWaitForNetworkIdle,
+      // Set longer timeouts for page navigation
+      page.setDefaultNavigationTimeout(ANIMATION_CONFIG.maxWaitForNetworkIdle);
+      page.setDefaultTimeout(ANIMATION_CONFIG.maxWaitForNetworkIdle);
+
+      // Navigate to the page with extended wait times
+      await page.goto(url, {
+        waitUntil: "networkidle",
+        timeout: ANIMATION_CONFIG.maxWaitForNetworkIdle,
+      });
+
+      // Wait for initial content
+      await page.waitForLoadState("domcontentloaded", { timeout: ANIMATION_CONFIG.maxWaitForDomContentLoaded });
+      await page.waitForLoadState("load", { timeout: ANIMATION_CONFIG.maxWaitForLoadEvent });
+      await page.waitForLoadState("networkidle", { timeout: ANIMATION_CONFIG.maxWaitForNetworkIdle });
+      await page.waitForTimeout(2000);
+
+      // Handle sliders and inline scripts
+      await handleCustomElements(page);
+
+      // Trigger scroll animations by scrolling through the entire page
+      await triggerScrollAnimations(page);
+
+      // Handle custom Point.dev attribute-based animations specifically
+      await handlePointAttributeAnimations(page);
+
+      // Wait for all animations to complete
+      await page.waitForTimeout(ANIMATION_CONFIG.finalDelay);
+
+      // Take the screenshot with viewport-specific options
+      await expect(page).toHaveScreenshot(getScreenshotOptions(viewport));
     });
-
-    // Wait for initial content
-    await page.waitForLoadState("domcontentloaded", { timeout: ANIMATION_CONFIG.maxWaitForDomContentLoaded });
-    await page.waitForLoadState("load", { timeout: ANIMATION_CONFIG.maxWaitForLoadEvent });
-    await page.waitForLoadState("networkidle", { timeout: ANIMATION_CONFIG.maxWaitForNetworkIdle });
-    await page.waitForTimeout(2000);
-
-    // Handle sliders and inline scripts
-    await handleCustomElements(page);
-
-    // Trigger scroll animations by scrolling through the entire page
-    await triggerScrollAnimations(page);
-
-    // Handle custom Point.dev attribute-based animations specifically
-    await handlePointAttributeAnimations(page);
-
-    // Wait for all animations to complete
-    await page.waitForTimeout(ANIMATION_CONFIG.finalDelay);
-
-    // Take the screenshot of the full page
-    await expect(page).toHaveScreenshot(OPTIONS);
-  });
+  }
 }
 
 /**
