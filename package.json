@@ -11,10 +11,7 @@
   "devDependencies": {
     "@playwright/test": "^1.49.1"
   },
-  "trustedDependencies": [
-    "playwright"
-  ],
   "engines": {
-    "bun": ">=1.0.0"
+    "node": ">=16.0.0"
   }
 }

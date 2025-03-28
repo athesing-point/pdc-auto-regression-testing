@@ -1,29 +1,28 @@
 # Point.dev Visual Regression Tests
 
-This project sets up automated visual regression testing for https://www.point.dev/ using Playwright with Bun.
+This project sets up automated visual regression testing for https://www.point.dev/ using Playwright with Node.js.
 
 ## Setup
 
-1. Install Bun:
+1. Make sure you have Node.js installed (v16 or later recommended):
 
 ```bash
-# macOS, Linux, or WSL
-curl -fsSL https://bun.sh/install | bash
+# Check Node.js version
+node --version
 
-# Windows (via PowerShell)
-powershell -c "irm bun.sh/install.ps1 | iex"
+# If not installed, download from https://nodejs.org/
 ```
 
 2. Install dependencies:
 
 ```bash
-bun install
+npm install
 ```
 
 3. Install browsers:
 
 ```bash
-bun exec playwright install
+npx playwright install
 ```
 
 ## Running Tests
@@ -36,7 +35,7 @@ The first time you run the tests, it will:
 2. Create baseline screenshots for comparison
 
 ```bash
-bun test
+npm test
 ```
 
 This initial run will "fail" because there are no baseline screenshots yet.
@@ -46,7 +45,7 @@ This initial run will "fail" because there are no baseline screenshots yet.
 After the baseline is created, run the tests again to compare against the baselines:
 
 ```bash
-bun test
+npm test
 ```
 
 ### Updating Baselines
@@ -54,7 +53,7 @@ bun test
 If you want to update the baseline screenshots (e.g., after an intentional design change):
 
 ```bash
-bun run update
+npm run update
 ```
 
 ### Viewing Reports
@@ -62,7 +61,7 @@ bun run update
 To see the visual comparison report after tests:
 
 ```bash
-bun run report
+npm run report
 ```
 
 ### Reset Everything
@@ -70,7 +69,7 @@ bun run report
 To clear all test artifacts and start fresh:
 
 ```bash
-bun run reset
+npm run reset
 ```
 
 ## Customization
@@ -87,3 +86,18 @@ If you encounter flaky tests:
 1. Check if dynamic elements need to be hidden in `visual.tweaks.css`
 2. Increase timeout values in `visual.test.js`
 3. Consider limiting the number of pages tested by editing `MAX_URLS` in `sitemap.js`
+
+## Special Handling for GSAP Animations
+
+This testing setup includes special support for Point.dev's custom GSAP animation library, ensuring that:
+
+1. All elements with `data-anim` attributes are properly triggered
+2. ScrollTrigger animations are fully executed before screenshots are taken
+3. Review sliders and interactive elements are properly displayed
+
+The tests will automatically:
+
+- Scroll through pages to trigger animations
+- Force animations to their final state
+- Wait appropriate times for animations to complete
+- Ensure all custom GSAP animations have completed properly
