@@ -14,7 +14,7 @@ const VIEWPORT_CONFIGS = {
 const getScreenshotOptions = (viewport) => ({
   stylePath: join(__dirname, "./visual.tweaks.css"),
   fullPage: true, // Use Playwright's built-in full page capture
-  timeout: 30000, // Significantly increased timeout for complex pages with animations
+  timeout: 60000, // Increased timeout for complex pages with heavy animations and content
   clip: {
     width: viewport.width,
     x: 0,
