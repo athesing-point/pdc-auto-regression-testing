@@ -19,24 +19,22 @@ const ANIMATION_CONFIG = {
   maxWaitForNetworkIdle: 20000, // Maximum time to wait for network idle
 };
 
-// Define a single test that dynamically handles all URLs
-// This approach avoids dynamic test creation which causes issues with Bun
-test("visual regression tests for all pages", async ({ page }) => {
-  // Try to load the sitemap
-  let sitemap = [];
-  try {
-    sitemap = readSiteMap();
-  } catch (err) {
+// Try to load the sitemap
+let sitemap = [];
+try {
+  sitemap = readSiteMap();
+} catch (err) {
+  test("site map missing", async ({ page }) => {
     throw new Error("Missing site map. Run tests once to generate it first.");
-  }
+  });
+}
 
-  // Set longer timeouts for page navigation
-  page.setDefaultNavigationTimeout(ANIMATION_CONFIG.maxWaitForNetworkIdle);
-  page.setDefaultTimeout(ANIMATION_CONFIG.maxWaitForNetworkIdle);
-
-  // Process each URL
-  for (const url of sitemap) {
-    console.log(`Testing page at ${url}`);
+// Generate a test for each URL in the sitemap
+for (const url of sitemap) {
+  test(`Page at ${url}`, async ({ page }) => {
+    // Set longer timeouts for page navigation
+    page.setDefaultNavigationTimeout(ANIMATION_CONFIG.maxWaitForNetworkIdle);
+    page.setDefaultTimeout(ANIMATION_CONFIG.maxWaitForNetworkIdle);
 
     // Navigate to the page with extended wait times
     await page.goto(url, {
@@ -62,14 +60,10 @@ test("visual regression tests for all pages", async ({ page }) => {
     // Wait for all animations to complete
     await page.waitForTimeout(ANIMATION_CONFIG.finalDelay);
 
-    // Take the screenshot of the full page with name based on URL
-    const screenshotName = url === "/" ? "homepage" : url.replace(/\//g, "-").replace(/^-/, "");
-    await expect(page).toHaveScreenshot({
-      ...OPTIONS,
-      name: `${screenshotName}.png`,
-    });
-  }
-});
+    // Take the screenshot of the full page
+    await expect(page).toHaveScreenshot(OPTIONS);
+  });
+}
 
 /**
  * Handler specifically for Point.dev's custom attribute-based animations
