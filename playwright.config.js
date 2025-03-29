@@ -8,6 +8,8 @@ export const HEIGHT = 800;
 
 // Check if running in CI environment
 const IS_CI = !!process.env.CI;
+// Check if we're generating baseline screenshots
+const IS_BASELINE = process.env.GENERATE_BASELINE === "true";
 
 // Helper to determine if a device is mobile
 const isMobileDevice = (device) => device.toLowerCase().includes("iphone") || device.toLowerCase().includes("pixel");
@@ -16,7 +18,7 @@ export default defineConfig({
   testDir: "./",
   fullyParallel: true,
   forbidOnly: IS_CI,
-  retries: 2,
+  retries: IS_BASELINE ? 0 : 2, // No retries for baseline, 2 retries for testing
   workers: IS_CI ? 1 : 24,
   reporter: [
     [

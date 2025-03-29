@@ -27,13 +27,50 @@ npx playwright install
 
 ## Running Tests
 
+### Test Workflow
+
+The testing process has two main phases:
+
+1. **Baseline Capture**: Generate reference screenshots without retries
+2. **Visual Testing**: Compare against baselines with automatic retries on failure
+
+#### Generating Baselines
+
+When capturing baseline screenshots (no retries):
+
+```bash
+# For staging (point.dev)
+bun run baseline:staging
+
+# For production (point.com)
+bun run baseline:prod
+
+# For default URL
+bun run baseline
+```
+
+#### Running Visual Tests
+
+When running tests against existing baselines (includes 2 retries on failure):
+
+```bash
+# For staging (point.dev)
+bun run test:staging
+
+# For production (point.com)
+bun run test:prod
+
+# For default URL
+bun run test
+```
+
 ### Environment Options
 
-You can run tests against different environments:
+Tests can be run against different environments:
 
-- Staging (point.dev): `npm run test:staging`
-- Production (point.com): `npm run test:prod`
-- Default (staging): `npm test`
+- Staging (point.dev): Uses `https://www.point.dev`
+- Production (point.com): Uses `https://point.com`
+- Default: Uses staging URL if not specified
 
 ### Hardware Considerations
 
@@ -53,34 +90,14 @@ Recommended worker counts:
 - Lower-end machines: 4-8 workers
 - CI environment: 1 worker (automatically set)
 
-### First Run - Generate Baseline
+### Retry Behavior
 
-The first time you run the tests, it will:
-
-1. Crawl the website to generate a sitemap
-2. Create baseline screenshots for comparison
-
-```bash
-# For staging
-npm run test:staging
-
-# For production
-npm run test:prod
-```
-
-This initial run will "fail" because there are no baseline screenshots yet.
-
-### Subsequent Runs
-
-After the baseline is created, run the tests again to compare against the baselines:
-
-```bash
-# For staging
-npm run test:staging
-
-# For production
-npm run test:prod
-```
+- **Baseline Generation**: No retries (`GENERATE_BASELINE=true`)
+- **Visual Testing**: 2 retries on failure
+  - First attempt fails → Retry #1
+  - Retry #1 fails → Retry #2
+  - Retry #2 fails → Test fails
+- Traces are captured on first retry for debugging
 
 ### Updating Baselines
 
@@ -88,10 +105,13 @@ If you want to update the baseline screenshots (e.g., after an intentional desig
 
 ```bash
 # For staging
-npm run update:staging
+bun run update:staging
 
 # For production
-npm run update:prod
+bun run update:prod
+
+# For default URL
+bun run update
 ```
 
 ### Viewing Reports
@@ -99,5 +119,19 @@ npm run update:prod
 To see the visual comparison report after tests:
 
 ```bash
-npm run report
+bun run report
 ```
+
+### Resetting Test Data
+
+To clean up all test artifacts and start fresh:
+
+```bash
+bun run reset
+```
+
+This will remove:
+
+- Playwright reports
+- Test results
+- Screenshot snapshots
