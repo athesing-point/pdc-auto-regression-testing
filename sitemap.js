@@ -27,24 +27,27 @@ export async function createSiteMap(baseURL, page) {
   // Extract URLs from the XML sitemap
   const urls = await page.evaluate(() => {
     const urlElements = document.querySelectorAll("loc");
-    return Array.from(urlElements).map((el) => {
-      const fullUrl = el.textContent;
-      // Just get the pathname, we'll handle domain replacement after
-      const path = new URL(fullUrl).pathname;
-      return path.startsWith("/") ? path : `/${path}`;
-    });
+    return Array.from(urlElements).map((el) => el.textContent);
   });
 
-  // Process URLs with template sampling
+  // Process URLs with template sampling and handle domain replacement
   const processedUrls = new Set();
   const templateSamples = new Map();
 
-  urls.forEach((url) => {
+  urls.forEach((fullUrl) => {
+    // Handle domain replacement for staging
+    let url = fullUrl;
+    if (isStaging && url.includes("point.com")) {
+      url = url.replace("point.com", "point.dev");
+    }
+
+    // Extract pathname for pattern matching
+    const pathname = new URL(url).pathname;
     let shouldInclude = true;
 
     // Check if URL matches any template pattern
     for (const [key, { pattern, sampleSize }] of Object.entries(TEMPLATE_PATTERNS)) {
-      if (pattern.test(url)) {
+      if (pattern.test(pathname)) {
         // If we haven't collected enough samples for this pattern yet
         if (!templateSamples.has(key)) {
           templateSamples.set(key, new Set());

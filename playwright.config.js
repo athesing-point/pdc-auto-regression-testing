@@ -19,6 +19,14 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     trace: "on-first-retry",
+    // Set longer timeouts for visual comparison tests
+    navigationTimeout: 60000,
+    actionTimeout: 60000,
+  },
+  // Global timeout settings
+  timeout: 180000, // 3 minutes per test
+  expect: {
+    timeout: 60000, // 1 minute for assertions (including screenshots)
   },
   projects: BROWSERS.map((ua) => ({
     name: ua.toLowerCase().replaceAll(" ", "-"),

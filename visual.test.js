@@ -15,21 +15,16 @@ const getScreenshotOptions = (viewport) => ({
   stylePath: join(__dirname, "./visual.tweaks.css"),
   fullPage: true, // Use Playwright's built-in full page capture
   timeout: 60000, // Increased timeout for complex pages with heavy animations and content
-  clip: {
-    width: viewport.width,
-    x: 0,
-    y: 0,
-  },
 });
 
 // Animation handling configuration
 const ANIMATION_CONFIG = {
-  scrollDelay: 300, // Increased delay between scroll steps (ms)
+  scrollDelay: 500, // Increased delay between scroll steps (ms)
   scrollStep: 150, // Smaller steps for more granular scrolling
-  finalDelay: 6000, // Longer wait time after scrolling for animations to finish
-  maxWaitForDomContentLoaded: 10000, // Maximum time to wait for DOM content
-  maxWaitForLoadEvent: 15000, // Maximum time to wait for load event
-  maxWaitForNetworkIdle: 20000, // Maximum time to wait for network idle
+  finalDelay: 8000, // Longer wait time after scrolling for animations to finish
+  maxWaitForDomContentLoaded: 60000, // Maximum time to wait for DOM content
+  maxWaitForLoadEvent: 60000, // Maximum time to wait for load event
+  maxWaitForNetworkIdle: 60000, // Maximum time to wait for network idle
 };
 
 // Try to load the sitemap
@@ -46,6 +41,9 @@ try {
 for (const url of sitemap) {
   for (const [viewportName, viewport] of Object.entries(VIEWPORT_CONFIGS)) {
     test(`${url} [${viewportName}]`, async ({ page }) => {
+      // Increase the test timeout
+      test.setTimeout(120000); // 2 minutes total test timeout
+
       // Set viewport size
       await page.setViewportSize({
         width: viewport.width,
