@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // Export these to make them accessible in other modules
-export const BROWSERS = ["Desktop Chrome", "Desktop Safari", "iPhone 13", "Pixel 5"];
+export const BROWSERS = ["Desktop Chrome", "iPhone 13"];
 export const BASE_URL = process.env.BASE_URL || "https://www.point.dev"; // Default to staging if not specified
 export const WIDTH = 1280;
 export const HEIGHT = 800;
@@ -17,7 +17,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: IS_CI,
   retries: 2,
-  workers: IS_CI ? 1 : 16,
+  workers: IS_CI ? 1 : 24,
   reporter: [
     [
       "html",

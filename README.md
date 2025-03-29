@@ -1,6 +1,6 @@
-# Point.com/.dev Visual Regression Tests
+# Point.dev Visual Regression Tests
 
-This project sets up automated visual regression testing for PDC/PDD websites using Playwright with Node.js.
+This project sets up automated visual regression testing for Point.dev websites using Playwright with Node.js.
 
 ## Setup
 
@@ -34,6 +34,24 @@ You can run tests against different environments:
 - Staging (point.dev): `npm run test:staging`
 - Production (point.com): `npm run test:prod`
 - Default (staging): `npm test`
+
+### Hardware Considerations
+
+The test suite is configured to run with 24 parallel workers by default, which is optimized for high-performance machines (like M2 Max). If you're running on a lower-powered computer, you may want to reduce the number of parallel workers to avoid overwhelming your system.
+
+To adjust the number of workers, modify the `workers` setting in `playwright.config.js`:
+
+```js
+// For lower-powered machines, reduce this number (e.g., 4-8)
+workers: IS_CI ? 1 : 24,
+```
+
+Recommended worker counts:
+
+- High-end machines (M2 Max, high-memory systems): 16-24 workers
+- Mid-range machines: 8-12 workers
+- Lower-end machines: 4-8 workers
+- CI environment: 1 worker (automatically set)
 
 ### First Run - Generate Baseline
 
