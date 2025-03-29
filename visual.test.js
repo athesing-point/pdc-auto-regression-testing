@@ -38,7 +38,7 @@ const REQUIRED_SCRIPTS = {
   nav: "https://cdn.jsdelivr.net/gh/athesing-point/pdc-nav@v2.1.1/dist/nav-states.js",
   animations: "https://cdn.jsdelivr.net/gh/athesing-point/gsap-animations@main/dist/animations.js",
   formLabels: "https://cdn.jsdelivr.net/gh/athesing-point/pdc-custom-code@latest/utilities/form-labels.min.js",
-  utmPersistence: "https://cdn.jsdelivr.net/gh/TO-Point/utm-persistence@a9c0c24/index.min.js",
+  // utmPersistence: "https://cdn.jsdelivr.net/gh/TO-Point/utm-persistence@a9c0c24/index.min.js",
   sliderDots: "https://cdn.jsdelivr.net/npm/@finsweet/attributes-sliderdots@1/sliderdots.js",
 };
 
@@ -102,7 +102,7 @@ for (const url of sitemap) {
       await page.screenshot({
         path: `playwright-report/attachments/${screenshotPath}`,
         fullPage: true,
-        animations: "disabled",
+        animations: "enabled",
         scale: "css",
       });
 

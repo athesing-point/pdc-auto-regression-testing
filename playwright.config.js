@@ -1,13 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // Export these to make them accessible in other modules
-export const BROWSERS = ["Desktop Firefox", "Desktop Chrome", "Desktop Safari"];
+export const BROWSERS = ["Desktop Chrome", "Desktop Safari", "iPhone 13", "Pixel 5"];
 export const BASE_URL = process.env.BASE_URL || "https://www.point.dev"; // Default to staging if not specified
 export const WIDTH = 1280;
 export const HEIGHT = 800;
 
 // Check if running in CI environment
 const IS_CI = !!process.env.CI;
+
+// Helper to determine if a device is mobile
+const isMobileDevice = (device) => device.toLowerCase().includes("iphone") || device.toLowerCase().includes("pixel");
 
 export default defineConfig({
   testDir: "./",
@@ -49,10 +52,12 @@ export default defineConfig({
     name: ua.toLowerCase().replaceAll(" ", "-"),
     use: {
       ...devices[ua],
-      viewport: {
-        width: WIDTH,
-        height: HEIGHT,
-      },
+      viewport: isMobileDevice(ua)
+        ? undefined
+        : {
+            width: WIDTH,
+            height: HEIGHT,
+          },
       screenshot: {
         mode: "on",
         fullPage: true,

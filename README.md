@@ -1,6 +1,6 @@
-# Point.dev Visual Regression Tests
+# Point.com/.dev Visual Regression Tests
 
-This project sets up automated visual regression testing for Point.dev websites using Playwright with Node.js.
+This project sets up automated visual regression testing for PDC/PDD websites using Playwright with Node.js.
 
 ## Setup
 
