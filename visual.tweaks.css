@@ -5,135 +5,151 @@
  */
 
 /* Hide cookie banners if they exist */
-div[class*="cookie-banner"],
-div[class*="cookieBanner"],
-div[id*="cookie-banner"],
-div[id*="cookieBanner"] {
+div[id*="cookie-wrapper"] {
   display: none !important;
 }
 
-/* Keep sliders and carousels visible, but hide other animations */
-[class*="animation"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([data-anim]),
-[class*="animate"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([data-anim]),
-[class*="typewriter"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([data-anim]) {
-  visibility: hidden !important;
+/* Webflow-specific video handling */
+/* .w-background-video,
+.w-background-video-atom {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-/* Force sliders to be visible */
-[class*="slider"],
+.w-background-video video {
+  object-fit: cover !important;
+  opacity: 1 !important;
+} */
+
+/* Force all Webflow background videos to show first frame */
+/* [data-poster-url] {
+  background-size: cover !important;
+  background-position: center center !important;
+  opacity: 1 !important;
+} */
+
+/* Keep sliders and carousels visible */
+/* [class*="slider"],
 [class*="carousel"],
 .swiper,
 .splide,
 .slick-slider,
 [class*="testimonial"],
 [class*="review"],
-[class*="rating"] {
+[class*="rating"],
+.w-slider,
+.w-slide {
   visibility: visible !important;
   opacity: 1 !important;
   display: block !important;
+  transform: none !important;
+} */
+
+/* Handle GSAP Custom animations */
+[data-anim] {
+  opacity: 1 !important;
+  transform: none !important;
+  visibility: visible !important;
+  transition: none !important;
+}
+
+[data-anim="fadeIn"],
+[data-anim="slideUp"],
+[data-anim="slideDown"],
+[data-anim="slideLeft"],
+[data-anim="slideRight"],
+[data-anim="scaleIn"],
+[data-anim="flipUp"] {
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 /* Hide chat widgets, notification popups */
-[id*="chat-widget"],
+/* [id*="chat-widget"],
 [class*="chat-widget"],
 [class*="notification"]:not([class*="review-notification"]):not([class*="testimonial"]),
 [class*="popup"]:not([class*="review"]):not([class*="testimonial"]),
 iframe[title*="chat"] {
   display: none !important;
-}
+} */
 
-/* Hide video players that might autoplay, but keep everything needed for reviews */
-video:not([class*="gsap"]):not([data-gsap]):not([class*="review"]):not([class*="testimonial"]):not([class*="slider"]):not([class*="carousel"]),
-[class*="video-player"]:not([class*="gsap"]):not([data-gsap]):not([class*="review"]):not([class*="testimonial"]):not([class*="slider"]):not([class*="carousel"]),
-[id*="video-player"]:not([class*="gsap"]):not([data-gsap]):not([class*="review"]):not([class*="testimonial"]):not([class*="slider"]):not([class*="carousel"]) {
-  visibility: hidden !important;
-}
+/* Stabilize Webflow-specific elements */
+/* .w-nav-button,
+.w-nav-menu,
+.w-dropdown-toggle,
+.w-dropdown-list {
+  transition: none !important;
+  transform: none !important;
+} */
+
+/* Force dropdown menus to be visible in screenshots */
+/* .w-dropdown-list.w--open {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+} */
 
 /* Stabilize link states */
-a:visited {
+/* a:visited {
   color: inherit !important;
-}
+} */
 
 /* Remove any blinking cursors */
-[class*="cursor"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]),
-.blinking:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]) {
+/* [class*="cursor"],
+.blinking {
   animation: none !important;
   opacity: 1 !important;
-}
+} */
 
-/* Hide any date/time that might change between tests */
-[class*="date"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([class*="review"]):not([class*="testimonial"]),
-[class*="time"]:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([class*="review"]):not([class*="testimonial"]),
-time:not([class*="gsap"]):not([data-gsap]):not([class*="slider"]):not([class*="carousel"]):not([class*="review"]):not([class*="testimonial"]) {
+/* Hide any date/time elements */
+/* [class*="date"]:not([class*="review"]):not([class*="testimonial"]),
+[class*="time"]:not([class*="review"]):not([class*="testimonial"]),
+time:not([class*="review"]):not([class*="testimonial"]) {
   visibility: hidden !important;
-}
+} */
 
-/* Force GSAP animations into their end state if not properly triggered */
-.gsap-force-end {
+/* Force GSAP animations into their end state */
+/* .gsap-force-end {
   opacity: 1 !important;
   transform: none !important;
   visibility: visible !important;
   transition: none !important;
-}
+} */
 
-/* Prevent slider transitions from causing inconsistencies */
-[class*="slider"] *,
+/* Prevent slider transitions */
+/* [class*="slider"] *,
 [class*="carousel"] *,
-.swiper *,
-.splide *,
-.slick-slider * {
+.w-slider *,
+.w-slide * {
   transition-duration: 0s !important;
   animation-duration: 0s !important;
-}
+} */
 
-/* Make sure slider pagination/navigation is visible */
-[class*="slider"] [class*="pagination"],
-[class*="slider"] [class*="dots"],
-[class*="slider"] [class*="navigation"],
-[class*="slider"] [class*="arrow"],
-[class*="slider"] [class*="bullet"],
-[class*="carousel"] [class*="pagination"],
-[class*="carousel"] [class*="dots"],
-[class*="carousel"] [class*="navigation"],
-[class*="carousel"] [class*="arrow"],
-[class*="carousel"] [class*="bullet"] {
+/* Make sure slider controls are visible */
+/* [class*="slider"] [class*="nav"],
+[class*="carousel"] [class*="nav"],
+.w-slider-nav,
+.w-slider-arrow-left,
+.w-slider-arrow-right {
   opacity: 1 !important;
   visibility: visible !important;
-}
+  pointer-events: none !important;
+} */
 
-/* Force all custom attribute-based animations to their end state */
-[data-anim] {
+/* Handle Webflow-specific loading states */
+/* .w-loading {
+  display: none !important;
+} */
+
+/* Ensure images are loaded */
+/* img {
+  opacity: 1 !important;
+} */
+
+/* Force all custom attribute-based animations to end state */
+/* [data-w-id] {
   opacity: 1 !important;
   transform: none !important;
   visibility: visible !important;
-  will-change: auto !important;
   transition: none !important;
-}
-
-/* Ensure specific animation types reach correct end states */
-[data-anim="fadeIn"] {
-  opacity: 1 !important;
-}
-
-[data-anim="slideUp"],
-[data-anim="slideDown"] {
-  transform: translateY(0) !important;
-  opacity: 1 !important;
-}
-
-[data-anim="slideLeft"],
-[data-anim="slideRight"] {
-  transform: translateX(0) !important;
-  opacity: 1 !important;
-}
-
-[data-anim="scaleIn"] {
-  transform: scale(1) !important;
-  opacity: 1 !important;
-}
-
-[data-anim="flipUp"] {
-  transform: translateY(0) rotateX(0) !important;
-  opacity: 1 !important;
-  perspective: none !important;
-}
+} */

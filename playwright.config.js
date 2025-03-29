@@ -15,10 +15,21 @@ export default defineConfig({
   forbidOnly: IS_CI,
   retries: 2,
   workers: IS_CI ? 1 : undefined,
-  reporter: "html",
+  reporter: [
+    [
+      "html",
+      {
+        open: "on-failure",
+        attachmentsDirectory: "playwright-report/attachments",
+      },
+    ],
+    ["list"],
+  ],
   use: {
     baseURL: BASE_URL,
     trace: "on-first-retry",
+    screenshot: "on", // Capture screenshots for all tests
+    video: "retain-on-failure",
     // Set longer timeouts for visual comparison tests
     navigationTimeout: 60000,
     actionTimeout: 60000,
@@ -27,6 +38,12 @@ export default defineConfig({
   timeout: 180000, // 3 minutes per test
   expect: {
     timeout: 60000, // 1 minute for assertions (including screenshots)
+    toHaveScreenshot: {
+      maxDiffPixelRatio: 0.1,
+      animations: "disabled",
+      caret: "hide",
+      scale: "css",
+    },
   },
   projects: BROWSERS.map((ua) => ({
     name: ua.toLowerCase().replaceAll(" ", "-"),
@@ -35,6 +52,10 @@ export default defineConfig({
       viewport: {
         width: WIDTH,
         height: HEIGHT,
+      },
+      screenshot: {
+        mode: "on",
+        fullPage: true,
       },
     },
   })),

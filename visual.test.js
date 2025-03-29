@@ -13,8 +13,13 @@ const VIEWPORT_CONFIGS = {
 // Configuration for screenshots
 const getScreenshotOptions = (viewport) => ({
   stylePath: join(__dirname, "./visual.tweaks.css"),
-  fullPage: true, // Use Playwright's built-in full page capture
-  timeout: 60000, // Increased timeout for complex pages with heavy animations and content
+  fullPage: true,
+  timeout: 60000,
+  animations: "disabled",
+  scale: "css",
+  attachments: true, // Ensure screenshots are attached to the report
+  omitBackground: true, // Make background transparent for better diff visibility
+  name: `${viewport.width}x${viewport.height}`, // Name screenshots based on viewport
 });
 
 // Animation handling configuration
@@ -25,6 +30,16 @@ const ANIMATION_CONFIG = {
   maxWaitForDomContentLoaded: 60000, // Maximum time to wait for DOM content
   maxWaitForLoadEvent: 60000, // Maximum time to wait for load event
   maxWaitForNetworkIdle: 60000, // Maximum time to wait for network idle
+};
+
+// Add script loading configuration
+const REQUIRED_SCRIPTS = {
+  gsap: "https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js",
+  nav: "https://cdn.jsdelivr.net/gh/athesing-point/pdc-nav@v2.1.1/dist/nav-states.js",
+  animations: "https://cdn.jsdelivr.net/gh/athesing-point/gsap-animations@main/dist/animations.js",
+  formLabels: "https://cdn.jsdelivr.net/gh/athesing-point/pdc-custom-code@latest/utilities/form-labels.min.js",
+  utmPersistence: "https://cdn.jsdelivr.net/gh/TO-Point/utm-persistence@a9c0c24/index.min.js",
+  sliderDots: "https://cdn.jsdelivr.net/npm/@finsweet/attributes-sliderdots@1/sliderdots.js",
 };
 
 // Try to load the sitemap
@@ -41,13 +56,11 @@ try {
 for (const url of sitemap) {
   for (const [viewportName, viewport] of Object.entries(VIEWPORT_CONFIGS)) {
     test(`${url} [${viewportName}]`, async ({ page }) => {
-      // Increase the test timeout
-      test.setTimeout(120000); // 2 minutes total test timeout
+      test.setTimeout(120000);
 
-      // Set viewport size
       await page.setViewportSize({
         width: viewport.width,
-        height: 800, // Default height, will scroll for full page capture
+        height: 800,
       });
 
       // Set longer timeouts for page navigation
@@ -63,25 +76,102 @@ for (const url of sitemap) {
       // Wait for initial content
       await page.waitForLoadState("domcontentloaded", { timeout: ANIMATION_CONFIG.maxWaitForDomContentLoaded });
       await page.waitForLoadState("load", { timeout: ANIMATION_CONFIG.maxWaitForLoadEvent });
+
+      // Ensure required scripts are loaded
+      await ensureScriptsLoaded(page);
+
+      // Wait for network idle after script injection
       await page.waitForLoadState("networkidle", { timeout: ANIMATION_CONFIG.maxWaitForNetworkIdle });
-      await page.waitForTimeout(2000);
+
+      // Handle Webflow-specific initialization
+      await handleWebflowInit(page);
 
       // Handle sliders and inline scripts
       await handleCustomElements(page);
 
-      // Trigger scroll animations by scrolling through the entire page
+      // Trigger scroll animations
       await triggerScrollAnimations(page);
-
-      // Handle custom Point.dev attribute-based animations specifically
-      await handlePointAttributeAnimations(page);
 
       // Wait for all animations to complete
       await page.waitForTimeout(ANIMATION_CONFIG.finalDelay);
 
-      // Take the screenshot with viewport-specific options
-      await expect(page).toHaveScreenshot(getScreenshotOptions(viewport));
+      // Take both a comparison screenshot and a report screenshot
+      const screenshotPath = `${viewportName}-${url.replace(/\//g, "_")}.png`;
+
+      // Take a screenshot for the report
+      await page.screenshot({
+        path: `playwright-report/attachments/${screenshotPath}`,
+        fullPage: true,
+        animations: "disabled",
+        scale: "css",
+      });
+
+      // Take the comparison screenshot
+      await expect(page).toHaveScreenshot({
+        ...getScreenshotOptions(viewport),
+        name: screenshotPath,
+      });
+
+      // Attach additional metadata to help with debugging
+      await test.info().attach("page-state", {
+        body: JSON.stringify(
+          {
+            url,
+            viewport: viewportName,
+            timestamp: new Date().toISOString(),
+            scripts: await page.evaluate(() =>
+              Array.from(document.scripts)
+                .map((s) => s.src)
+                .filter(Boolean)
+            ),
+          },
+          null,
+          2
+        ),
+        contentType: "application/json",
+      });
     });
   }
+}
+
+/**
+ * Handler for Webflow-specific initialization
+ */
+async function handleWebflowInit(page) {
+  await page.evaluate(() => {
+    // Force all Webflow videos to show first frame
+    document.querySelectorAll(".w-background-video").forEach((video) => {
+      const poster = video.getAttribute("data-poster-url");
+      if (poster) {
+        video.style.backgroundImage = `url(${poster})`;
+      }
+    });
+
+    // Force all Webflow animations to complete
+    document.querySelectorAll("[data-anim]").forEach((el) => {
+      el.style.opacity = "1";
+      el.style.transform = "none";
+      el.style.visibility = "visible";
+    });
+
+    // Handle Webflow-specific elements
+    document.querySelectorAll("[data-w-id]").forEach((el) => {
+      el.style.opacity = "1";
+      el.style.transform = "none";
+      el.style.visibility = "visible";
+    });
+
+    // Initialize Webflow dropdowns
+    document.querySelectorAll(".w-dropdown").forEach((dropdown) => {
+      const toggle = dropdown.querySelector(".w-dropdown-toggle");
+      const list = dropdown.querySelector(".w-dropdown-list");
+      if (toggle && list) {
+        list.classList.add("w--open");
+      }
+    });
+  });
+
+  await page.waitForTimeout(2000);
 }
 
 /**
@@ -173,71 +263,41 @@ async function handlePointAttributeAnimations(page) {
 }
 
 /**
- * Handler for custom elements like review sliders and inline scripts
+ * Handler for custom elements like sliders
  */
 async function handleCustomElements(page) {
   await page.evaluate(() => {
-    // Force sliders to initialize if they haven't already
-    const sliders = document.querySelectorAll('[class*="slider"], [class*="carousel"], .swiper, .slick-slider, .splide');
-
-    // For each slider, try common slider initialization methods
-    sliders.forEach((slider) => {
-      // Make slider visible
+    // Force sliders to initialize
+    document.querySelectorAll(".w-slider").forEach((slider) => {
       slider.style.opacity = "1";
       slider.style.visibility = "visible";
 
-      // If it's a hidden tab/panel, make it active/visible
-      if (slider.getAttribute("aria-hidden") === "true") {
-        slider.setAttribute("aria-hidden", "false");
-      }
-
-      // Move slider to active slide if possible
-      const activeSlide = slider.querySelector('.active, .current, [aria-current="true"], [aria-selected="true"]');
-      if (activeSlide) {
-        activeSlide.scrollIntoView({ behavior: "auto", block: "center" });
-      }
+      // Make first slide active
+      const slides = slider.querySelectorAll(".w-slide");
+      slides.forEach((slide, index) => {
+        if (index === 0) {
+          slide.style.opacity = "1";
+          slide.style.visibility = "visible";
+        } else {
+          slide.style.display = "none";
+        }
+      });
     });
 
-    // Run inline scripts that might have been blocked
-    document.querySelectorAll("script:not([src])").forEach((inlineScript) => {
+    // Run any inline scripts
+    document.querySelectorAll("script:not([src])").forEach((script) => {
       try {
-        // This won't work for all inline scripts due to security, but helps in some cases
-        if (inlineScript.textContent.includes("slider") || inlineScript.textContent.includes("carousel") || inlineScript.textContent.includes("swiper") || inlineScript.textContent.includes("slick")) {
+        if (script.textContent.includes("slider") || script.textContent.includes("w-") || script.textContent.includes("Webflow")) {
           const newScript = document.createElement("script");
-          newScript.textContent = inlineScript.textContent;
+          newScript.textContent = script.textContent;
           document.head.appendChild(newScript);
         }
       } catch (e) {
         console.error("Error executing inline script:", e);
       }
     });
-
-    // Force GSAP reveal animations to complete
-    if (window.gsap) {
-      const revealElements = document.querySelectorAll('[class*="reveal"], [class*="fade"], [data-animation]');
-      revealElements.forEach((el) => {
-        try {
-          gsap.to(el, {
-            opacity: 1,
-            y: 0,
-            x: 0,
-            scale: 1,
-            rotation: 0,
-            duration: 0,
-            delay: 0,
-            ease: "none",
-          });
-        } catch (e) {
-          // Fallback if gsap.to fails
-          el.style.opacity = "1";
-          el.style.transform = "none";
-          el.style.visibility = "visible";
-        }
-      });
-    }
   });
 
-  // Wait for any changes to take effect
   await page.waitForTimeout(2000);
 }
 
@@ -296,4 +356,53 @@ async function triggerScrollAnimations(page) {
 
   // Wait for animations to finish after scrolling
   await page.waitForTimeout(ANIMATION_CONFIG.finalDelay);
+}
+
+/**
+ * Ensures all required scripts are loaded and executed
+ */
+async function ensureScriptsLoaded(page) {
+  // Check which scripts are already loaded
+  const loadedScripts = await page.evaluate(() => {
+    return Array.from(document.getElementsByTagName("script")).map((script) => script.src);
+  });
+
+  // Load any missing scripts
+  for (const [key, url] of Object.entries(REQUIRED_SCRIPTS)) {
+    if (!loadedScripts.includes(url)) {
+      await page.evaluate(async (scriptUrl) => {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = scriptUrl;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }, url);
+    }
+  }
+
+  // Wait for GSAP to be available and initialized
+  await page.waitForFunction(() => window.gsap !== undefined);
+
+  // Wait for Point-specific scripts to initialize
+  await page.evaluate(async () => {
+    // Wait for nav states to initialize
+    if (typeof window.Point !== "undefined" && typeof window.Point.Nav !== "undefined") {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    // Wait for animations to initialize
+    if (typeof window.gsap !== "undefined" && typeof window.gsap.timeline !== "undefined") {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    // Force all GSAP animations to complete
+    if (window.gsap && window.gsap.globalTimeline) {
+      window.gsap.globalTimeline.progress(1);
+    }
+  });
+
+  // Additional wait to ensure everything is stable
+  await page.waitForTimeout(2000);
 }

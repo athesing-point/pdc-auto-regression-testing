@@ -11,6 +11,18 @@ const TEMPLATE_PATTERNS = {
     pattern: /^\/blog\/(?!category|author)/, // Match blog posts but not category/author pages
     sampleSize: 1, // Only test one blog post as they use the same template
   },
+  testimonials: {
+    pattern: /^\/testimonials/,
+    sampleSize: 1,
+  },
+  help: {
+    pattern: /^\/helps?\//,
+    sampleSize: 1,
+  },
+  legal: {
+    pattern: /^\/(terms|privacy|licenses)/,
+    sampleSize: 1,
+  },
 };
 
 export async function createSiteMap(baseURL, page) {
@@ -30,57 +42,57 @@ export async function createSiteMap(baseURL, page) {
     return Array.from(urlElements).map((el) => el.textContent);
   });
 
-  // Process URLs with template sampling and handle domain replacement
+  // Process URLs with template sampling
   const processedUrls = new Set();
   const templateSamples = new Map();
 
-  urls.forEach((fullUrl) => {
-    // Handle domain replacement for staging
-    let url = fullUrl;
-    if (isStaging && url.includes("point.com")) {
-      url = url.replace("point.com", "point.dev");
+  // First pass: Collect template samples
+  for (const url of urls) {
+    const path = new URL(url).pathname;
+
+    // Skip certain paths
+    if (path.includes("/dev/") || path.includes("/archives/") || path.includes("/detail_")) {
+      continue;
     }
 
-    // Extract pathname for pattern matching
-    const pathname = new URL(url).pathname;
-    let shouldInclude = true;
-
-    // Check if URL matches any template pattern
+    let isTemplateSample = false;
     for (const [key, { pattern, sampleSize }] of Object.entries(TEMPLATE_PATTERNS)) {
-      if (pattern.test(pathname)) {
-        // If we haven't collected enough samples for this pattern yet
+      if (pattern.test(path)) {
         if (!templateSamples.has(key)) {
           templateSamples.set(key, new Set());
         }
         const samples = templateSamples.get(key);
         if (samples.size < sampleSize) {
-          samples.add(url);
-          break;
-        } else {
-          shouldInclude = false;
-          break;
+          samples.add(path);
+          isTemplateSample = true;
         }
+        break;
       }
     }
 
-    if (shouldInclude) {
-      processedUrls.add(url);
+    if (!isTemplateSample) {
+      processedUrls.add(path);
     }
-  });
+  }
 
-  // Add template samples to final URL set
+  // Add template samples to processed URLs
   for (const samples of templateSamples.values()) {
-    samples.forEach((url) => processedUrls.add(url));
+    for (const sample of samples) {
+      processedUrls.add(sample);
+    }
   }
 
   // Convert to array and limit
-  const finalUrls = Array.from(processedUrls).slice(0, MAX_URLS);
+  const finalUrls = Array.from(processedUrls)
+    .slice(0, MAX_URLS)
+    .map((path) => path.replace(/\/+$/, "")); // Remove trailing slashes
 
   // Save to sitemap.json
   const data = JSON.stringify(finalUrls, null, 2);
   writeFileSync(SITEMAP, data, { encoding: "utf-8" });
   console.log(`Saved ${finalUrls.length} URLs to sitemap.json (including ${templateSamples.get("blog")?.size || 0} blog post sample)`);
   console.log(`Testing against ${isStaging ? "staging (point.dev)" : "production (point.com)"}`);
+  return finalUrls;
 }
 
 export function readSiteMap() {
