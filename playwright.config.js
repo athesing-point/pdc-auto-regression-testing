@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 // Export these to make them accessible in other modules
 export const BROWSERS = ["Desktop Chrome"];
 export const BASE_URL = process.env.BASE_URL || "https://www.point.dev"; // Default to staging if not specified
-export const WIDTH = 1280;
+export const WIDTH = 1279;
 export const HEIGHT = 800;
 
 // Check if running in CI environment
@@ -21,7 +21,7 @@ export default defineConfig({
   testDir: "./",
   fullyParallel: true,
   forbidOnly: IS_CI,
-  retries: IS_BASELINE ? 0 : 2, // No retries for baseline, 2 retries for testing
+  retries: 0,
   workers: IS_CI ? 1 : 24,
   reporter: [
     [

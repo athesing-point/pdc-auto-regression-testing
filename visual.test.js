@@ -4,8 +4,7 @@ import { join } from "node:path";
 
 // Define viewport configurations
 const VIEWPORT_CONFIGS = {
-  desktop_large: { width: 1920 },
-  desktop: { width: 992 },
+  desktop: { width: 1279 },
   tablet: { width: 768 },
   mobile: { width: 375 },
 };
