@@ -1,7 +1,7 @@
 node_modules/
 test-results/
 playwright-report/
-*-snapshots/
+test-*-snapshots/
 sitemap.json
 .DS_Store
 # Bun specific

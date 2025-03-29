@@ -27,7 +27,7 @@ export default defineConfig({
     [
       "html",
       {
-        open: "on-failure",
+        open: "always",
         attachmentsDirectory: "playwright-report/attachments",
       },
     ],
@@ -35,8 +35,11 @@ export default defineConfig({
   ],
   use: {
     baseURL: BASE_URL,
-    trace: "on-first-retry",
-    screenshot: "on", // Capture screenshots for all tests
+    trace: "retain-on-failure",
+    screenshot: {
+      mode: "on",
+      fullPage: true,
+    },
     video: "retain-on-failure",
     // Set longer timeouts for visual comparison tests
     navigationTimeout: 60000,
@@ -47,7 +50,9 @@ export default defineConfig({
   expect: {
     timeout: 60000, // 1 minute for assertions (including screenshots)
     toHaveScreenshot: {
-      maxDiffPixelRatio: 0.1,
+      maxDiffPixels: 0,
+      maxDiffPixelRatio: 0,
+      threshold: 0,
       animations: "disabled",
       caret: "hide",
       scale: "css",

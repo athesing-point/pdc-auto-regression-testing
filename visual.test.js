@@ -101,7 +101,7 @@ for (const url of sitemap) {
       await page.screenshot({
         path: `playwright-report/attachments/${screenshotPath}`,
         fullPage: true,
-        animations: "enabled",
+        animations: "disabled",
         scale: "css",
       });
 
